@@ -1,0 +1,30 @@
+// TODAS AS HISTORIAS ok
+//GET http://localhost:8080/api/stories
+
+// ENVIAR HISTORIA ok
+# POST http://localhost:8080/api/stories
+# content-type: application/json
+
+# {
+#     "title": "sample",
+#     "description": "sample",
+#     "priority": 1
+# }
+
+// UMA HISTORIA ok
+// GET http://localhost:8080/api/stories/2
+
+// ALTERAR PRIORIDADE ok
+// PATCH http://localhost:8080/api/stories/2/3
+
+// ALTERAR HISTORIA ok
+# PATCH http://localhost:8080/api/stories/2
+# content-type: application/json
+
+# {
+#     "title": "sample2",
+#     "description": "sample2"
+# }
+
+// DELETAR UMA HISTORIA ok
+// DELETE http://localhost:8080/api/stories/2

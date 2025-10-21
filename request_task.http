@@ -1,0 +1,33 @@
+// TODAS AS ATIVIDADES ok
+// GET http://localhost:8080/api/tasks
+
+// ENVIAR HISTORIA ok
+# POST http://localhost:8080/api/tasks
+# content-type: application/json
+
+# {
+#     "title": "sample",
+#     "description": "sample",
+#     "hourEstimated": 1,
+#     "developer": "USER",
+#     "status": "ON_GOING"
+
+# }
+
+// UMA HISTORIA ok
+// GET http://localhost:8080/api/tasks/2
+
+// ALTERAR STATUS ok
+// PATCH http://localhost:8080/api/tasks/2/FINISHED
+
+// ALTERAR HISTORIA ok
+# PATCH http://localhost:8080/api/tasks/1
+# content-type: application/json
+
+# {
+#     "hourEstimated": 4,
+#     "developer": "USER1"
+# }
+
+// DELETAR UMA HISTORIA ok
+// DELETE http://localhost:8080/api/tasks/2
