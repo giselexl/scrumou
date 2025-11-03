@@ -4,78 +4,51 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import br.ifsp.scrumou.model.Task;
-import br.ifsp.scrumou.repository.TaskRepository;
+import br.ifsp.scrumou.dto.task.TaskRequestDTO;
+import br.ifsp.scrumou.dto.task.TaskResponseDTO;
+import br.ifsp.scrumou.service.TaskService;
 
 @RestController
 @RequestMapping("api/tasks")
 public class TaskController {
     @Autowired
-    private TaskRepository taskRepository;
+    private TaskService taskService;
 
-    // Criar uma nova tarefa
     @PostMapping
-    public Task newTask(@RequestBody Task task) {
-        return taskRepository.save(task);
+    public ResponseEntity<TaskResponseDTO> newTask(@RequestBody TaskRequestDTO task) {
+        TaskResponseDTO createdTask = taskService.createTask(task);
+        return ResponseEntity.ok(createdTask);
     }
 
-    // Alterar status da tarefa
     @PatchMapping("/{id}/{newStatus}")
-    public Task alterTaskStatus(@PathVariable Long id, @PathVariable String newStatus) {
-        Task task = taskRepository.findById(id).orElse(null);
-
-        task.setStatus(newStatus);
-
-        Task updatedTask = taskRepository.save(task);
-
-        return updatedTask;
+    public ResponseEntity<TaskResponseDTO> alterTaskStatus(@PathVariable Long id, @PathVariable String newStatus) {
+        TaskResponseDTO updatedTask = taskService.updateStatus(id, newStatus);
+        return ResponseEntity.ok(updatedTask);
     }
 
-    // Alterar uma tarefa existente
     @PatchMapping("/{id}")
-    public Task alterTask(@PathVariable Long id, @RequestBody Map<String, String> updateTask) {
-        Task task = taskRepository.findById(id).orElseThrow(null);
-    
-        updateTask.forEach((key, value) -> {
-            switch (key) {
-                case "title":
-                    task.setTitle(value);
-                    break;
-                case "description":
-                    task.setDescription(value);
-                    break;
-                case "hourEstimated":
-                    task.setHourEstimated(Integer.parseInt(value));
-                    break;
-                case "developer":
-                    task.setDeveloper(value);
-                    break;
-                case "status":
-                    task.setStatus(value);
-                    break;
-            }
-        });
-
-        return taskRepository.save(task);
+    public ResponseEntity<TaskResponseDTO> alterTask(@PathVariable Long id, @RequestBody Map<String, String> updateTask) {
+        TaskResponseDTO updatedTask = taskService.updatePartial(id, updateTask);
+        return ResponseEntity.ok(updatedTask);
     }
 
-    // Deletar uma tarefa
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskRepository.deleteById(id);
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 
-    // Visualizar todas as tarefas
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public ResponseEntity<List<TaskResponseDTO>> getAllTasks() {
+        List<TaskResponseDTO> tasks = taskService.findAll();
+        return ResponseEntity.ok(tasks);
     }
 
-    // Visualizar apenas uma tarefa
     @GetMapping("/{id}")
-    public Task getTaskById(@PathVariable Long id) {
-        return taskRepository.findById(id).orElseThrow(null);
+    public ResponseEntity<TaskResponseDTO> getTaskById(@PathVariable Long id) {
+        return ResponseEntity.ok(taskService.findById(id));
     }
 }
