@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +21,14 @@ public class StoryController {
 
     @PostMapping
     public ResponseEntity<StoryResponseDTO> newStory(@RequestBody StoryRequestDTO story) {
-        return ResponseEntity.ok(storyService.createStory(story));
+        StoryResponseDTO createdStory = storyService.createStory(story);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdStory);
     }
 
     @PatchMapping("/{id}/{newPriority}")
     public ResponseEntity<StoryResponseDTO> alterPriorityStory(@PathVariable Long id, @PathVariable Integer newPriority) {
-        return ResponseEntity.ok(storyService.alterPriority(id, newPriority));
+        StoryResponseDTO updatedPriorityStory = storyService.alterPriority(id, newPriority);
+        return ResponseEntity.ok(updatedPriorityStory);
     }
 
     @PatchMapping("/{id}")
