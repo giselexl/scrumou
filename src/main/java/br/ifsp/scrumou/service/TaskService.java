@@ -5,6 +5,7 @@ import br.ifsp.scrumou.dto.task.TaskResponseDTO;
 import br.ifsp.scrumou.model.Task;
 import br.ifsp.scrumou.repository.TaskRepository;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,27 +18,28 @@ import java.util.Map;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final ModelMapper modelMapper;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, ModelMapper modelMapper) {
         this.taskRepository = taskRepository;
+        this.modelMapper = modelMapper;
     }
 
     public TaskResponseDTO createTask(TaskRequestDTO requestDTO) {
-        Task task = mapToEntity(requestDTO);
+        Task task = modelMapper.map(requestDTO, Task.class);
 
         if (task.getStatus() == null || task.getStatus().isEmpty()) {
             //TODO alter hardcoded status to enum default value
             task.setStatus("TO DO");
         }
 
-        Task savedTask = taskRepository.save(task);
-        return mapToResponseDTO(savedTask);
+        return modelMapper.map(taskRepository.save(task), TaskResponseDTO.class);
     }
 
     public Page<TaskResponseDTO> findAll(Pageable pageable) {
         Page<Task> tasks = taskRepository.findAll(pageable);
 
-        return tasks.map(this::mapToResponseDTO);
+        return tasks.map(task -> modelMapper.map(task, TaskResponseDTO.class));
     }
 
     public TaskResponseDTO findById(Long id) {
@@ -45,7 +47,7 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Tarefa com ID " + id + " não encontrada."));
-        return mapToResponseDTO(task);
+        return modelMapper.map(task, TaskResponseDTO.class);
     }
 
     public void deleteTask(Long id) {
@@ -64,8 +66,7 @@ public class TaskService {
 
         task.setStatus(newStatus);
 
-        Task updatedTask = taskRepository.save(task);
-        return mapToResponseDTO(updatedTask);
+        return modelMapper.map(taskRepository.save(task), TaskResponseDTO.class);
     }
 
     public TaskResponseDTO updatePartial(Long id, Map<String, String> updates) {
@@ -99,28 +100,6 @@ public class TaskService {
             }
         });
 
-        Task updatedTask = taskRepository.save(task);
-        return mapToResponseDTO(updatedTask);
-    }
-
-    private Task mapToEntity(TaskRequestDTO dto) {
-        Task task = new Task();
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
-        task.setHourEstimated(dto.getHourEstimated());
-        task.setDeveloper(dto.getDeveloper());
-        task.setStatus(dto.getStatus());
-        return task;
-    }
-
-    private TaskResponseDTO mapToResponseDTO(Task task) {
-        TaskResponseDTO dto = new TaskResponseDTO();
-        dto.setId(task.getId());
-        dto.setTitle(task.getTitle());
-        dto.setDescription(task.getDescription());
-        dto.setHourEstimated(task.getHourEstimated());
-        dto.setDeveloper(task.getDeveloper());
-        dto.setStatus(task.getStatus());
-        return dto;
+        return modelMapper.map(taskRepository.save(task), TaskResponseDTO.class);
     }
 }

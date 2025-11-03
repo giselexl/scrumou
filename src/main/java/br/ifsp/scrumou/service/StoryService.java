@@ -5,6 +5,8 @@ import br.ifsp.scrumou.dto.story.StoryResponseDTO;
 import br.ifsp.scrumou.model.Story;
 import br.ifsp.scrumou.repository.StoryRepository;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,23 +20,23 @@ import java.util.Optional;
 public class StoryService {
 
     private final StoryRepository storyRepository;
+    private final ModelMapper modelMapper;
 
-    public StoryService(StoryRepository storyRepository) {
+    @Autowired
+    public StoryService(StoryRepository storyRepository, ModelMapper modelMapper) {
         this.storyRepository = storyRepository;
+        this.modelMapper = modelMapper;
     }
 
     public StoryResponseDTO createStory(StoryRequestDTO requestDTO) {
-        Story story = mapToEntity(requestDTO);
-
+        Story story = modelMapper.map(requestDTO, Story.class);
         Story savedStory = storyRepository.save(story);
-
-        return mapToResponseDTO(savedStory);
+        return modelMapper.map(savedStory, StoryResponseDTO.class);
     }
 
     public Page<StoryResponseDTO> findAll(Pageable pageable) {
         Page<Story> stories = storyRepository.findAll(pageable);
-
-        return stories.map(this::mapToResponseDTO);
+        return stories.map(story -> modelMapper.map(story, StoryResponseDTO.class));
     }
 
     public Optional<StoryResponseDTO> findById(Long id) {
@@ -44,7 +46,7 @@ public class StoryService {
         }
 
         return storyRepository.findById(id)
-                .map(this::mapToResponseDTO);
+                .map(story -> modelMapper.map(story, StoryResponseDTO.class));
     }
 
     public void deleteStory(Long id) {
@@ -63,7 +65,7 @@ public class StoryService {
 
         story.setPriority(newPriority);
         Story updatedStory = storyRepository.save(story);
-        return mapToResponseDTO(updatedStory);
+        return modelMapper.map(updatedStory, StoryResponseDTO.class);
     }
 
     public StoryResponseDTO updateStory(Long id, Map<String, String> updateStory) {
@@ -83,25 +85,7 @@ public class StoryService {
         }
 
         Story updatedStory = storyRepository.save(story);
-        return mapToResponseDTO(updatedStory);
-    }
-
-    private Story mapToEntity(StoryRequestDTO dto) {
-        Story story = new Story();
-
-        story.setTitle(dto.getTitle());
-        story.setDescription(dto.getDescription());
-        story.setPriority(dto.getPriority());
-        return story;
-    }
-
-    private StoryResponseDTO mapToResponseDTO(Story story) {
-        StoryResponseDTO dto = new StoryResponseDTO();
-        dto.setId(story.getId());
-        dto.setTitle(story.getTitle());
-        dto.setDescription(story.getDescription());
-        dto.setPriority(story.getPriority());
-        return dto;
+        return modelMapper.map(updatedStory, StoryResponseDTO.class);
     }
 
 }
