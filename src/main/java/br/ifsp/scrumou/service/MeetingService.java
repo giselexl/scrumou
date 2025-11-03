@@ -14,21 +14,30 @@ import org.springframework.web.server.ResponseStatusException;
 import br.ifsp.scrumou.dto.meeting.MeetingRequestDTO;
 import br.ifsp.scrumou.dto.meeting.MeetingResponseDTO;
 import br.ifsp.scrumou.model.Meeting;
+import br.ifsp.scrumou.model.Sprint;
 import br.ifsp.scrumou.repository.MeetingRepository;
+import br.ifsp.scrumou.repository.SprintRepository;
 
 @Service
 public class MeetingService {
     private final MeetingRepository meetingRepository;
+    private final SprintRepository sprintRepository;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public MeetingService(MeetingRepository meetingRepository, ModelMapper modelMapper) {
+    public MeetingService(MeetingRepository meetingRepository, SprintRepository sprintRepository, ModelMapper modelMapper) {
         this.meetingRepository = meetingRepository;
+        this.sprintRepository = sprintRepository;
         this.modelMapper = modelMapper;
     }
 
     public MeetingResponseDTO createMeeting(MeetingRequestDTO requestDTO) {
+        Sprint sprint = sprintRepository.findById(requestDTO.getSprint().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sprint com ID " + requestDTO.getSprint().getId() + " não encontrada."));
+
         Meeting meeting = modelMapper.map(requestDTO, Meeting.class);
+        meeting.setSprint(sprint);
         Meeting savedMeeting = meetingRepository.save(meeting);
         return modelMapper.map(savedMeeting, MeetingResponseDTO.class);
     }

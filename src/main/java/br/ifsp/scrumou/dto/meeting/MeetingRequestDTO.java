@@ -6,7 +6,11 @@ import br.ifsp.scrumou.model.Sprint;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class MeetingRequestDTO {
     @NotNull(message = "O título não pode ser nulo")
     private String title;
