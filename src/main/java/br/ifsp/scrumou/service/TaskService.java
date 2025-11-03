@@ -25,6 +25,7 @@ public class TaskService {
         Task task = mapToEntity(requestDTO);
 
         if (task.getStatus() == null || task.getStatus().isEmpty()) {
+            //TODO alter hardcoded status to enum default value
             task.setStatus("TO DO");
         }
 
