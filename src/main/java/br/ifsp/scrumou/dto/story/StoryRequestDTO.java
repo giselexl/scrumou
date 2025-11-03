@@ -1,22 +1,11 @@
-package br.ifsp.scrumou.model;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+package br.ifsp.scrumou.dto.story;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
-public class Story {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    //TODO add validations for all fields
+public class StoryRequestDTO {
 
     @NotNull(message = "O título não pode estar vazio")
     private String title;

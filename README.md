@@ -6,6 +6,12 @@ O **Sistema de Controle de Processos Scrum** é uma plataforma desenvolvida para
 Inspirado em ferramentas como **Azure DevOps** e **GitScrum**, o sistema busca reunir em um único ambiente todos os recursos necessários para o planejamento, execução e acompanhamento de sprints e tarefas ágeis.
 
 ---
+## Integrantes da equipe:
+- Fernanda Barbosa da Silva - GU3045242
+- Gisele C.S.S. Medeiros - GU3046176
+- Natalia da Silva Tavares - GU3047008
+- Renan de Paula Paz Oliveira - GU3046478
+---
 
 ## 🎯 Objetivo
 
@@ -93,3 +99,4 @@ Sinta-se à vontade para contribuir, modificar e aprimorar o sistema conforme as
 ## 💡 Conclusão
 
 O **Sistema de Controle de Processos Scrum** visa tornar o gerenciamento ágil **mais eficiente, transparente e integrado**, sendo uma solução essencial para equipes modernas que valorizam produtividade e colaboração.
+
