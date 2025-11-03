@@ -22,9 +22,6 @@ import br.ifsp.scrumou.repository.SprintRepository;
 public class SprintService {
     private final SprintRepository sprintRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     public SprintService(SprintRepository sprintRepository, ModelMapper modelMapper) {
         this.sprintRepository = sprintRepository;
         this.modelMapper = modelMapper;
@@ -86,5 +83,8 @@ public class SprintService {
         Sprint updatedSprint = sprintRepository.save(sprint);
         return modelMapper.map(updatedSprint, SprintResponseDTO.class);
     }
+
+    @Autowired
+    private ModelMapper modelMapper;
 
 }

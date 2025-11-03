@@ -2,11 +2,12 @@ package br.ifsp.scrumou.model;
 
 import java.time.LocalDate;
 
-import org.springframework.data.annotation.Id;
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,5 +31,6 @@ public class Sprint {
     @NotNull(message = "A data de término não pode ser nula")
     private LocalDate endDate;
 
+    @OneToOne(cascade = CascadeType.ALL)
     private Story story;
 }
