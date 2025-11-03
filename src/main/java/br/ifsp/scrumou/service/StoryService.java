@@ -8,11 +8,11 @@ import br.ifsp.scrumou.repository.StoryRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class StoryService {
@@ -31,12 +31,10 @@ public class StoryService {
         return mapToResponseDTO(savedStory);
     }
 
-    public List<StoryResponseDTO> findAll() {
-        List<Story> stories = storyRepository.findAll();
+    public Page<StoryResponseDTO> findAll(Pageable pageable) {
+        Page<Story> stories = storyRepository.findAll(pageable);
 
-        return stories.stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+        return stories.map(this::mapToResponseDTO);
     }
 
     public Optional<StoryResponseDTO> findById(Long id) {

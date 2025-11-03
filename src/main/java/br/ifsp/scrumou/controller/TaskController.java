@@ -1,9 +1,10 @@
 package br.ifsp.scrumou.controller;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,8 +44,8 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponseDTO>> getAllTasks() {
-        List<TaskResponseDTO> tasks = taskService.findAll();
+    public ResponseEntity<Page<TaskResponseDTO>> getAllTasks(Pageable pageable) {
+        Page<TaskResponseDTO> tasks = taskService.findAll(pageable);
         return ResponseEntity.ok(tasks);
     }
 

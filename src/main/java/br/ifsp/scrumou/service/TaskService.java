@@ -4,13 +4,14 @@ import br.ifsp.scrumou.dto.task.TaskRequestDTO;
 import br.ifsp.scrumou.dto.task.TaskResponseDTO;
 import br.ifsp.scrumou.model.Task;
 import br.ifsp.scrumou.repository.TaskRepository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -33,10 +34,10 @@ public class TaskService {
         return mapToResponseDTO(savedTask);
     }
 
-    public List<TaskResponseDTO> findAll() {
-        return taskRepository.findAll().stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    public Page<TaskResponseDTO> findAll(Pageable pageable) {
+        Page<Task> tasks = taskRepository.findAll(pageable);
+
+        return tasks.map(this::mapToResponseDTO);
     }
 
     public TaskResponseDTO findById(Long id) {

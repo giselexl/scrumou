@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.ifsp.scrumou.dto.story.StoryRequestDTO;
 import br.ifsp.scrumou.dto.story.StoryResponseDTO;
@@ -44,8 +46,9 @@ public class StoryController {
     }
 
     @GetMapping
-    public List<StoryResponseDTO> getAllStories() {
-        return storyService.findAll();
+    public ResponseEntity<Page<StoryResponseDTO>> getAllStories(Pageable pageable) {
+        Page<StoryResponseDTO> stories = storyService.findAll(pageable);
+        return ResponseEntity.ok(stories);
     }
 
     @GetMapping("/{id}")
