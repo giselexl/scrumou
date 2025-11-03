@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +24,6 @@ public class StoryService {
     }
 
     public StoryResponseDTO createStory(StoryRequestDTO requestDTO) {
-
         Story story = mapToEntity(requestDTO);
 
         Story savedStory = storyRepository.save(story);
@@ -31,12 +32,21 @@ public class StoryService {
     }
 
     public List<StoryResponseDTO> findAll() {
-
         List<Story> stories = storyRepository.findAll();
 
         return stories.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<StoryResponseDTO> findById(Long id) {
+        if (!storyRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "História com ID " + id + " não encontrada.");
+        }
+
+        return storyRepository.findById(id)
+                .map(this::mapToResponseDTO);
     }
 
     public void deleteStory(Long id) {
@@ -48,13 +58,32 @@ public class StoryService {
     }
 
     public StoryResponseDTO alterPriority(Long id, Integer newPriority) {
-
         Story story = storyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "História com ID " + id + " não encontrada."));
 
         story.setPriority(newPriority);
+        Story updatedStory = storyRepository.save(story);
+        return mapToResponseDTO(updatedStory);
+    }
+
+    public StoryResponseDTO updateStory(Long id, Map<String, String> updateStory) {
+        Story story = storyRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "História com ID " + id + " não encontrada para alteração."));
+
+        if (updateStory.containsKey("title")) {
+            story.setTitle(updateStory.get("title"));
+        }
+        if (updateStory.containsKey("description")) {
+            story.setDescription(updateStory.get("description"));
+        }
+        if (updateStory.containsKey("priority")) {
+            story.setPriority(Integer.parseInt(updateStory.get("priority")));
+        }
+
         Story updatedStory = storyRepository.save(story);
         return mapToResponseDTO(updatedStory);
     }
