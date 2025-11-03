@@ -5,72 +5,50 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import br.ifsp.scrumou.model.Story;
-import br.ifsp.scrumou.repository.StoryRepository;
+import br.ifsp.scrumou.dto.story.StoryRequestDTO;
+import br.ifsp.scrumou.dto.story.StoryResponseDTO;
+import br.ifsp.scrumou.service.StoryService;
 
 @RestController
 @RequestMapping("api/stories")
 public class StoryController {
     @Autowired
-    private StoryRepository storyRepository;
+    private StoryService storyService;
 
-    // Criar uma nova história
     @PostMapping
-    public Story newStory(@RequestBody Story story) {
-        return storyRepository.save(story);
+    public ResponseEntity<StoryResponseDTO> newStory(@RequestBody StoryRequestDTO story) {
+        return ResponseEntity.ok(storyService.createStory(story));
     }
 
-    // Alterar ordem de prioridade
     @PatchMapping("/{id}/{newPriority}")
-    public Story alterPriorityStory(@PathVariable Long id, @PathVariable Integer newPriority) {
-        Story story = storyRepository.findById(id).orElse(null);
-
-        story.setPriority(newPriority);
-
-        Story updatedStory = storyRepository.save(story);
-
-        return updatedStory;
+    public ResponseEntity<StoryResponseDTO> alterPriorityStory(@PathVariable Long id, @PathVariable Integer newPriority) {
+        return ResponseEntity.ok(storyService.alterPriority(id, newPriority));
     }
 
-    // Alterar uma história existente
     @PatchMapping("/{id}")
-    public Story alterStory(@PathVariable Long id, @RequestBody Map<String, String> updateStory) {
-        Story story = storyRepository.findById(id).orElseThrow(null);
-    
-        updateStory.forEach((key, value) -> {
-            switch (key) {
-                case "title":
-                    story.setTitle(value);
-                    break;
-                case "description":
-                    story.setDescription(value);
-                    break;
-                case "priority":
-                    story.setPriority(Integer.parseInt(value));
-                    break;
-            }
-        });
-
-        return storyRepository.save(story);
+    public ResponseEntity<StoryResponseDTO> alterStory(@PathVariable Long id, @RequestBody Map<String, String> updateStory) {
+        StoryResponseDTO updatedStory = storyService.updateStory(id, updateStory);
+        return ResponseEntity.ok(updatedStory);
     }
 
-    // Deletar uma historia
     @DeleteMapping("/{id}")
-    public void deleteStory(@PathVariable Long id) {
-        storyRepository.deleteById(id);
+    public ResponseEntity<Void> deleteStory(@PathVariable Long id) {
+        storyService.deleteStory(id);
+        return ResponseEntity.noContent().build();
     }
 
-    // Visualizar todas as histórias
     @GetMapping
-    public List<Story> getAllStories() {
-        return storyRepository.findAll();
+    public List<StoryResponseDTO> getAllStories() {
+        return storyService.findAll();
     }
 
-    // Visualizar apenas uma história
     @GetMapping("/{id}")
-    public Optional<Story> getStoryById(@PathVariable Long id) {
-        return storyRepository.findById(id);
+    public ResponseEntity<StoryResponseDTO> getStoryById(@PathVariable Long id) {
+        Optional<StoryResponseDTO> story = storyService.findById(id);
+
+        return story.isPresent() ? ResponseEntity.ok(story.get()) : ResponseEntity.notFound().build();
     }
 }
