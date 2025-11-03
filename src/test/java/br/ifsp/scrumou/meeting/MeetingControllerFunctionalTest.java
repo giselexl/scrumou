@@ -1,7 +1,6 @@
 package br.ifsp.scrumou.meeting;
 
 import com.jayway.jsonpath.JsonPath;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,10 +23,7 @@ public class MeetingControllerFunctionalTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private Integer sprintId;
-
-    @BeforeEach
-    public void setup() throws Exception {
+    private Integer createSprintAndGetId() throws Exception {
         String sprintJson = String.format("""
                 {
                     "title": "Setup Sprint for Meeting Test",
@@ -41,22 +37,21 @@ public class MeetingControllerFunctionalTest {
                 .content(sprintJson))
                 .andExpect(status().isCreated())
                 .andReturn();
-
         String responseString = result.getResponse().getContentAsString();
-        sprintId = JsonPath.read(responseString, "$.id");
+        return JsonPath.read(responseString, "$.id");
     }
 
     @Test
     public void shouldCreateMeetingSuccessfully() throws Exception {
+        Integer sprintId = createSprintAndGetId();
+
         String json = String.format("""
                     {
                         "title": "Functional Test Meeting",
                         "minutes": "Some minutes",
                         "date": "%s",
                         "time": "10:00",
-                        "sprint": {
-                            "id": %d
-                        }
+                        "sprint": { "id": %d }
                     }
                 """, LocalDate.now(), sprintId);
 
@@ -78,15 +73,15 @@ public class MeetingControllerFunctionalTest {
 
     @Test
     public void shouldReturnMeetingById() throws Exception {
+        Integer sprintId = createSprintAndGetId();
+
         String createJson = String.format("""
                 {
                     "title": "Meeting to Get",
                     "minutes": "Some minutes",
                     "date": "%s",
                     "time": "11:00",
-                    "sprint": {
-                        "id": %d
-                    }
+                    "sprint": { "id": %d }
                 }
                 """, LocalDate.now(), sprintId);
         MvcResult createResult = mockMvc.perform(post("/api/meetings")
@@ -105,15 +100,15 @@ public class MeetingControllerFunctionalTest {
 
     @Test
     public void shouldReturnMeetingsBySprintId() throws Exception {
+        Integer sprintId = createSprintAndGetId();
+
         String createJson = String.format("""
                 {
                     "title": "Meeting for Sprint",
                     "minutes": "Some minutes",
                     "date": "%s",
                     "time": "12:00",
-                    "sprint": {
-                        "id": %d
-                    }
+                    "sprint": { "id": %d }
                 }
                 """, LocalDate.now(), sprintId);
         mockMvc.perform(post("/api/meetings")
@@ -136,15 +131,15 @@ public class MeetingControllerFunctionalTest {
 
     @Test
     public void shouldUpdateMeetingPartially() throws Exception {
+        Integer sprintId = createSprintAndGetId();
+
         String createJson = String.format("""
                 {
                     "title": "Meeting to Update Partially",
                     "minutes": "Some minutes",
                     "date": "%s",
                     "time": "13:00",
-                    "sprint": {
-                        "id": %d
-                    }
+                    "sprint": { "id": %d }
                 }
                 """, LocalDate.now(), sprintId);
         MvcResult createResult = mockMvc.perform(post("/api/meetings")
@@ -159,7 +154,8 @@ public class MeetingControllerFunctionalTest {
                 {
                     "title": "Updated Title"
                 }
-                """;
+                """
+        ;
         mockMvc.perform(patch("/api/meetings/" + meetingId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateJson))
@@ -170,15 +166,15 @@ public class MeetingControllerFunctionalTest {
 
     @Test
     public void shouldDeleteMeeting() throws Exception {
+        Integer sprintId = createSprintAndGetId();
+
         String createJson = String.format("""
                 {
                     "title": "Meeting to Delete",
                     "minutes": "Some minutes",
                     "date": "%s",
                     "time": "14:00",
-                    "sprint": {
-                        "id": %d
-                    }
+                    "sprint": { "id": %d }
                 }
                 """, LocalDate.now(), sprintId);
         MvcResult createResult = mockMvc.perform(post("/api/meetings")
