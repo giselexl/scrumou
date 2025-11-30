@@ -37,7 +37,6 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, ChatMessage> mobileContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, ChatMessage> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        // Set the group id for this specific listener container factory
         factory.getContainerProperties().setGroupId("mobile");
         return factory;
     }
