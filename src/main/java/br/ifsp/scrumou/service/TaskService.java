@@ -2,8 +2,10 @@ package br.ifsp.scrumou.service;
 
 import br.ifsp.scrumou.dto.task.TaskRequestDTO;
 import br.ifsp.scrumou.dto.task.TaskResponseDTO;
+import br.ifsp.scrumou.identity.dto.UserResponse;
 import br.ifsp.scrumou.model.Task;
 import br.ifsp.scrumou.repository.TaskRepository;
+import br.ifsp.scrumou.identity.adapter.IdentityFacade;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -19,27 +21,56 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ModelMapper modelMapper;
+    private final IdentityFacade identityFacade;
 
-    public TaskService(TaskRepository taskRepository, ModelMapper modelMapper) {
+    public TaskService(TaskRepository taskRepository, ModelMapper modelMapper, IdentityFacade identityFacade) {
         this.taskRepository = taskRepository;
         this.modelMapper = modelMapper;
+        this.identityFacade = identityFacade;
     }
 
     public TaskResponseDTO createTask(TaskRequestDTO requestDTO) {
         Task task = modelMapper.map(requestDTO, Task.class);
 
-        if (task.getStatus() == null || task.getStatus().isEmpty()) {
-            //TODO alter hardcoded status to enum default value
-            task.setStatus("TO DO");
+        String devIdentifier = requestDTO.getDeveloper();
+        if (devIdentifier != null && !devIdentifier.isBlank()) {
+            UserResponse user = identityFacade.resolveDeveloper(devIdentifier);
+            task.setDeveloperId(user.id);
+            task.setDeveloper(user);
         }
 
-        return modelMapper.map(taskRepository.save(task), TaskResponseDTO.class);
+        if (task.getStatus() == null || task.getStatus().isEmpty()) {
+            task.setStatus("TODO");
+        }
+
+        Task saved = taskRepository.save(task);
+
+        if (saved.getDeveloperId() != null && saved.getDeveloper() == null) {
+            saved.setDeveloper(identityFacade.resolveDeveloper(String.valueOf(saved.getDeveloperId())));
+        }
+
+        TaskResponseDTO dto = modelMapper.map(saved, TaskResponseDTO.class);
+
+        if (saved.getDeveloper() != null) {
+            dto.setDeveloper(saved.getDeveloper().name);
+        }
+
+        return dto;
     }
 
     public Page<TaskResponseDTO> findAll(Pageable pageable) {
         Page<Task> tasks = taskRepository.findAll(pageable);
 
-        return tasks.map(task -> modelMapper.map(task, TaskResponseDTO.class));
+        return tasks.map(task -> {
+            if (task.getDeveloperId() != null && task.getDeveloper() == null) {
+                task.setDeveloper(identityFacade.resolveDeveloper(String.valueOf(task.getDeveloperId())));
+            }
+            TaskResponseDTO dto = modelMapper.map(task, TaskResponseDTO.class);
+            if (task.getDeveloper() != null) {
+                dto.setDeveloper(task.getDeveloper().name);
+            }
+            return dto;
+        });
     }
 
     public TaskResponseDTO findById(Long id) {
@@ -47,7 +78,14 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Tarefa com ID " + id + " não encontrada."));
-        return modelMapper.map(task, TaskResponseDTO.class);
+        if (task.getDeveloperId() != null) {
+            task.setDeveloper(identityFacade.resolveDeveloper(String.valueOf(task.getDeveloperId())));
+        }
+        TaskResponseDTO dto = modelMapper.map(task, TaskResponseDTO.class);
+        if (task.getDeveloper() != null) {
+            dto.setDeveloper(task.getDeveloper().name);
+        }
+        return dto;
     }
 
     public void deleteTask(Long id) {
@@ -66,14 +104,26 @@ public class TaskService {
 
         task.setStatus(newStatus);
 
-        return modelMapper.map(taskRepository.save(task), TaskResponseDTO.class);
+        Task saved = taskRepository.save(task);
+        TaskResponseDTO dto = modelMapper.map(saved, TaskResponseDTO.class);
+        if (saved.getDeveloper() != null) {
+            dto.setDeveloper(saved.getDeveloper().name);
+        }
+        return dto;
     }
 
     public TaskResponseDTO updatePartial(Long id, Map<String, String> updates) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Tarefa " + id + " não encontrada"));
+                        "Tarefa com ID " + id + " não encontrada para alteração."));
+
+        if (updates.containsKey("developer")) {
+            String devIdentifier = updates.get("developer");
+            UserResponse user = identityFacade.resolveDeveloper(devIdentifier);
+            task.setDeveloperId(user.id);
+            task.setDeveloper(user);
+        }
 
         updates.forEach((key, value) -> {
             switch (key) {
@@ -91,15 +141,16 @@ public class TaskService {
                                 "hourEstimated deve ser um número inteiro.");
                     }
                     break;
-                case "developer":
-                    task.setDeveloper(value);
-                    break;
                 case "status":
                     task.setStatus(value);
                     break;
             }
         });
-
-        return modelMapper.map(taskRepository.save(task), TaskResponseDTO.class);
+        Task saved = taskRepository.save(task);
+        TaskResponseDTO dto = modelMapper.map(saved, TaskResponseDTO.class);
+        if (saved.getDeveloper() != null) {
+            dto.setDeveloper(saved.getDeveloper().name);
+        }
+        return dto;
     }
 }
